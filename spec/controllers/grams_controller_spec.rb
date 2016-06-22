@@ -60,33 +60,49 @@ RSpec.describe GramsController, type: :controller do
 		end
 
 		it "should return 404 error if the gram is not found" do
+			user = FactoryGirl.create(:user)
+			sign_in user
+
 			get :show, id:'TACOCAT'
 			expect(response).to have_http_status(:not_found)
 		end
 	end
 
 	describe "grams#edit action" do
+		it "shouldn't let unauthenticated users edit a gram" do
+      gram = FactoryGirl.create(:gram)
+      get :edit, id: gram.id
+      expect(response).to redirect_to new_user_session_path
+    end
+
 		it "should successfully show the edit form if the gram is found" do
 			gram = FactoryGirl.create(:gram)
+			sign_in gram.user
+
 			get :edit, id: gram.id
 			expect(response).to have_http_status(:success)
 		end
 
 		it "should return a 404 error if the gram is not found" do
+			user = FactoryGirl.create(:user)
+			sign_in user
+			
 			get :edit, id: 'SILLYGOOSE'
 			expect(response).to have_http_status(:not_found)
 		end
 	end
 
 	describe "grams#update action" do
-		it "shouldn't let unauthenticated users update a gram" do
-			gram = FactoryGirl.create(:gram)
-			gram :update, id: gram.id
-			expect(response).to redirect_to new_user_session_path
-		end
+    it "shouldn't let unauthenticated users create a gram" do
+      gram = FactoryGirl.create(:gram)
+      patch :update, id: gram.id, gram: { message: "Hello" }
+      expect(response).to redirect_to new_user_session_path
+    end
 
 		it "should allow users to successfully update grams" do
 			gram = FactoryGirl.create(:gram, message: "Initial Value")
+			sign_in gram.user
+
 			patch :update, id: gram.id, gram: {message: "Changed"}
 			expect(response).to redirect_to root_path
 
@@ -95,12 +111,17 @@ RSpec.describe GramsController, type: :controller do
 		end
 
 		it "should return 404 error if the gram is not found" do
+			user = FactoryGirl.create(:user)
+			sign_in user
+
 			patch :update, id: 'TRIXRABBIT', gram: {message: "Changed"}
 			expect(response).to have_http_status(:not_found)
 		end
 
 		it "should render the edit form with return status unprocessable_entity" do
 			gram = FactoryGirl.create(:gram, message: "Initial Value")
+			sign_in gram.user
+
 			patch :update, id: gram.id, gram: {message: ""}
 			expect(response).to have_http_status(:unprocessable_entity)
 
@@ -110,14 +131,16 @@ RSpec.describe GramsController, type: :controller do
 	end
 
 	describe "grams#destroy action" do
-		it "shouldn't let unauthenticated users destroy a gram" do
-			gram = FactoryGirl.create(:gram)
-			delete :destroy, id: gram.id
-			expect(response).to redirect_to new_user_session_path
-		end
+    it "shouldn't let unauthenticated users destroy a gram" do
+      gram = FactoryGirl.create(:gram)
+      delete :destroy, id: gram.id
+      expect(response).to redirect_to new_user_session_path
+    end
 
 		it "should allow user to destroy the gram" do
 			gram = FactoryGirl.create(:gram)
+			sign_in gram.user
+
 			delete :destroy, id: gram.id
 			expect(response).to redirect_to root_path
 
@@ -126,6 +149,9 @@ RSpec.describe GramsController, type: :controller do
 		end
 
 		it "should return a 404 error cannot find the gram with the specified id" do
+			user = FactoryGirl.create(:user)
+			sign_in user
+
 			delete :destroy, id: 'SPACEJAM'
 			expect(response).to have_http_status(:not_found)
 		end
