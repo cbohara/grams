@@ -67,8 +67,8 @@ RSpec.describe GramsController, type: :controller do
 
 	describe "grams#edit action" do
 		it "should successfully show the edit form if the gram is found" do
-			editGram = FactoryGirl.create(:gram)
-			get :edit, id: editGram.id
+			gram = FactoryGirl.create(:gram)
+			get :edit, id: gram.id
 			expect(response).to have_http_status(:success)
 		end
 
@@ -79,13 +79,19 @@ RSpec.describe GramsController, type: :controller do
 	end
 
 	describe "grams#update action" do
+		it "shouldn't let unauthenticated users update a gram" do
+			gram = FactoryGirl.create(:gram)
+			gram :update, id: gram.id
+			expect(response).to redirect_to new_user_session_path
+		end
+
 		it "should allow users to successfully update grams" do
-			updateGram = FactoryGirl.create(:gram, message: "Initial Value")
-			patch :update, id: updateGram.id, gram: {message: "Changed"}
+			gram = FactoryGirl.create(:gram, message: "Initial Value")
+			patch :update, id: gram.id, gram: {message: "Changed"}
 			expect(response).to redirect_to root_path
 
-			updateGram.reload
-			expect(updateGram.message).to eq "Changed"
+			gram.reload
+			expect(gram.message).to eq "Changed"
 		end
 
 		it "should return 404 error if the gram is not found" do
@@ -94,23 +100,29 @@ RSpec.describe GramsController, type: :controller do
 		end
 
 		it "should render the edit form with return status unprocessable_entity" do
-			updateGram = FactoryGirl.create(:gram, message: "Initial Value")
-			patch :update, id: updateGram.id, gram: {message: ""}
+			gram = FactoryGirl.create(:gram, message: "Initial Value")
+			patch :update, id: gram.id, gram: {message: ""}
 			expect(response).to have_http_status(:unprocessable_entity)
 
-			updateGram.reload
-			expect(updateGram.message).to eq "Initial Value"
+			gram.reload
+			expect(gram.message).to eq "Initial Value"
 		end
 	end
 
-	describe "grams#delete action" do
+	describe "grams#destroy action" do
+		it "shouldn't let unauthenticated users destroy a gram" do
+			gram = FactoryGirl.create(:gram)
+			delete :destroy, id: gram.id
+			expect(response).to redirect_to new_user_session_path
+		end
+
 		it "should allow user to destroy the gram" do
-			deleteGram = FactoryGirl.create(:gram)
-			delete :destroy, id: deleteGram.id
+			gram = FactoryGirl.create(:gram)
+			delete :destroy, id: gram.id
 			expect(response).to redirect_to root_path
 
-			deleted = Gram.find_by_id(deleteGram.id)
-			expect(deleted).to eq nil
+			gram = Gram.find_by_id(gram.id)
+			expect(gram).to eq nil
 		end
 
 		it "should return a 404 error cannot find the gram with the specified id" do
