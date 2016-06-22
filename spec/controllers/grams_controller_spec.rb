@@ -102,4 +102,20 @@ RSpec.describe GramsController, type: :controller do
 			expect(updateGram.message).to eq "Initial Value"
 		end
 	end
+
+	describe "grams#delete action" do
+		it "should allow user to destroy the gram" do
+			deleteGram = FactoryGirl.create(:gram)
+			delete :destroy, id: deleteGram.id
+			expect(response).to redirect_to root_path
+
+			deleted = Gram.find_by_id(deleteGram.id)
+			expect(deleted).to eq nil
+		end
+
+		it "should return a 404 error cannot find the gram with the specified id" do
+			delete :destroy, id: 'SPACEJAM'
+			expect(response).to have_http_status(:not_found)
+		end
+	end
 end
