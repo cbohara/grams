@@ -2,7 +2,7 @@ Grams::Application.routes.draw do
   
   devise_for :users
   root "grams#index"
-  resource :grams, only: [:new, :create]
+  resource :grams, only: [:new, :create, :show]
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
