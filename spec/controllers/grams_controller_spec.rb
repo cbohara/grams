@@ -86,7 +86,7 @@ RSpec.describe GramsController, type: :controller do
 		it "should return a 404 error if the gram is not found" do
 			user = FactoryGirl.create(:user)
 			sign_in user
-			
+
 			get :edit, id: 'SILLYGOOSE'
 			expect(response).to have_http_status(:not_found)
 		end
@@ -133,8 +133,11 @@ RSpec.describe GramsController, type: :controller do
 	describe "grams#destroy action" do
     it "shouldn't let unauthenticated users destroy a gram" do
       gram = FactoryGirl.create(:gram)
+      user = FactoryGirl.create(:user)
+      sign_in user
+
       delete :destroy, id: gram.id
-      expect(response).to redirect_to new_user_session_path
+      expect(response).to have_http_status(:forbidden)
     end
 
 		it "should allow user to destroy the gram" do
